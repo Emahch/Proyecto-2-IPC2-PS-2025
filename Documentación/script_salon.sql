@@ -18,7 +18,7 @@ CREATE TABLE clientes (
 CREATE TABLE servicios (
   nombre VARCHAR(40) PRIMARY KEY,
   precio double not null,
-  descipcion VARCHAR(100) not null,
+  descripcion VARCHAR(100) not null,
   catalogo BLOB null,
   imagen BLOB not null,
   duracion double not null,
@@ -50,7 +50,7 @@ CREATE TABLE anuncios (
 CREATE TABLE empleados (
   dpi VARCHAR(14) PRIMARY KEY,
   nombre VARCHAR(50) not null,
-  descipcion VARCHAR(200) not null,
+  descripcion VARCHAR(200) not null,
   estado VARCHAR(20) not null,
   rol VARCHAR(20) not null,
   contraseña VARCHAR(100) not null,
@@ -65,7 +65,7 @@ CREATE TABLE perfiles (
   dpi VARCHAR(14) not null,
   fotografia BLOB null,
   hobbies VARCHAR(100) null,
-  descipcion VARCHAR(100) null,
+  descripcion VARCHAR(100) null,
   PRIMARY KEY (correo, dpi),
   INDEX fk_perfiles_clientes_idx (dpi ASC) VISIBLE,
   CONSTRAINT fk_prefiles_clientes
