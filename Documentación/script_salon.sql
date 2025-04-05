@@ -50,11 +50,11 @@ CREATE TABLE anuncios (
 CREATE TABLE empleados (
   dpi VARCHAR(14) PRIMARY KEY,
   nombre VARCHAR(50) not null,
-  descripcion VARCHAR(200) not null,
+  descripcion VARCHAR(200) null,
   estado VARCHAR(20) not null,
   rol VARCHAR(20) not null,
-  contraseña VARCHAR(100) not null,
-  fotografia BLOB not null,
+  contraseña VARCHAR(100) null,
+  fotografia BLOB null,
   CONSTRAINT fk_empleados_roles
     FOREIGN KEY (rol)
     REFERENCES roles (nombre)
@@ -136,3 +136,22 @@ CREATE TABLE publicaciones (
     FOREIGN KEY (id_anuncio)
     REFERENCES anuncios (id)
 );
+
+-- Ingresando roles iniciales
+INSERT INTO `roles` (`nombre`) VALUES ('ADMINISTRADOR');
+INSERT INTO `roles` (`nombre`) VALUES ('EMPLEADO');
+INSERT INTO `roles` (`nombre`) VALUES ('SERVICIOS');
+INSERT INTO `roles` (`nombre`) VALUES ('MARKETING');
+
+-- Administrador inicial
+INSERT INTO empleados (`dpi`, `nombre`, `descripcion`, `estado`, `rol`, `contraseña`) VALUES ('3140290400901', 'Administrador', 'Administrador principal del sistema', 'ACTIVO', 'ADMINISTRADOR', '3132333435363738');
+
+-- Horarios de muestra (pueden ser modificados)
+INSERT INTO `horarios` (`dia_semana`, `hora_inicio`, `minutos_inicio`, `hora_fin`, `minutos_fin`) 
+VALUES ('1', '8', '0', '18', '0'),
+('2', '8', '0', '18', '0'),
+('3', '8', '0', '18', '0'),
+('4', '8', '0', '18', '0'),
+('5', '8', '0', '18', '0'),
+('6', '8', '0', '18', '0'),
+('7', '12', '0', '20', '0');
