@@ -2,6 +2,7 @@ package com.joca.salon.api.rest.backend.jwt;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.joca.salon.api.rest.model.usuarios.empleados.RolEnum;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -36,7 +37,8 @@ public class TokenFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String path = requestContext.getUriInfo().getPath();
 
-        if (path.startsWith("empleado/login") || path.startsWith("cliente/login")) {
+        if (path.startsWith("empleado/login") || path.startsWith("cliente/login") || path.startsWith("cliente/registro")
+                || path.startsWith("cliente/password") || path.startsWith("empleado/password")) {
             return;
         }
         String authorizationHeader = requestContext.getHeaderString("Authorization");
@@ -56,9 +58,12 @@ public class TokenFilter implements ContainerRequestFilter {
                 return;
             }
 
-            String role = decodedJWT.getClaim("rol").asString();
+            String rol = decodedJWT.getClaim("rol").asString();
             // Validar si existe el rol en @RolesAllowed
-            if (!isUserInRole(role)) {
+            if (isAdmin(rol)) {
+                return;
+            }
+            if (!isUserInRol(rol)) {
                 abortWithForbidden(requestContext, "El usuario no esta autorizado para acceder a esta funcionalidad");
             }
 
@@ -67,7 +72,7 @@ public class TokenFilter implements ContainerRequestFilter {
         }
     }
 
-    private boolean isUserInRole(String roleFromToken) {
+    private boolean isUserInRol(String roleFromToken) {
         // Obtener la clase o método solicitado
         Method method = resourceInfo.getResourceMethod();
 
@@ -113,5 +118,14 @@ public class TokenFilter implements ContainerRequestFilter {
                         .entity(message)
                         .build()
         );
+    }
+    
+    private boolean isAdmin(String rolName){
+        try {
+            RolEnum rol = RolEnum.valueOf(rolName);
+            return rol.equals(RolEnum.ADMINISTRADOR);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

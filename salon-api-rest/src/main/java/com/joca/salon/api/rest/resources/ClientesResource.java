@@ -5,11 +5,11 @@ import com.joca.salon.api.rest.backend.exceptions.DuplicatedDataException;
 import com.joca.salon.api.rest.backend.exceptions.InvalidDataException;
 import com.joca.salon.api.rest.backend.exceptions.PasswordNeedUpdateException;
 import com.joca.salon.api.rest.backend.exceptions.UserNotValidException;
-import com.joca.salon.api.rest.backend.services.EmpleadosService;
+import com.joca.salon.api.rest.backend.services.ClientesService;
 import com.joca.salon.api.rest.backend.services.UsuariosService;
 import com.joca.salon.api.rest.model.EstadoEnum;
 import com.joca.salon.api.rest.model.usuarios.CredencialesDTO;
-import com.joca.salon.api.rest.model.usuarios.empleados.Empleado;
+import com.joca.salon.api.rest.model.usuarios.clientes.Cliente;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
@@ -29,11 +29,11 @@ import java.util.Map;
  *
  * @author
  */
-@Path("empleado")
-public class EmpleadosResource {
+@Path("cliente")
+public class ClientesResource {
 
     /**
-     * Realiza el intento de un login para un empleado
+     * Realiza el intento de un login para un cliente
      *
      * @param credenciales
      * @return status code: 406 si el identificador o contraseña son
@@ -47,13 +47,13 @@ public class EmpleadosResource {
     public Response iniciarSesion(CredencialesDTO credenciales) {
         UsuariosService usuariosService = new UsuariosService();
         try {
-            String token = usuariosService.iniciarSesion(credenciales, Empleado.class);
+            String token = usuariosService.iniciarSesion(credenciales, Cliente.class);
             Map<String, String> response = new HashMap<>();
             response.put("token", token);
             return Response.ok(response).build();
         } catch (DataNotFoundException | InvalidDataException ex) {
             ex.printStackTrace();
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity("El identificador o contraseña son incorrectos").build();
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity("El correo o contraseña son incorrectos").build();
         } catch (SQLException | UserNotValidException ex) {
             ex.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -64,19 +64,20 @@ public class EmpleadosResource {
     }
     
     /**
-     * Registra un nuevo empleado en el sistema
+     * Registra un nuevo cliente en el sistema
      *
-     * @param empleado
-     * @return status code: 406 si los datos del empleado no son validos,
+     * @param cliente
+     * @return status code: 406 si los datos del cliente no son validos,
      * 500 si ocurre un error al realizar el proceso.
      * 201 si se realiza el registro de forma exitosa
      */
     @POST
+    @Path("registro")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response registro(Empleado empleado) {
-        EmpleadosService empleadosService = new EmpleadosService();
+    public Response registro(Cliente cliente) {
+        ClientesService clientesService = new ClientesService();
         try {
-            empleadosService.registrarEmpleado(empleado);
+            clientesService.registrarCliente(cliente);
             return Response.status(Response.Status.CREATED).build();
         } catch (InvalidDataException | DuplicatedDataException ex) {
             ex.printStackTrace();
@@ -88,19 +89,20 @@ public class EmpleadosResource {
     }
     
     /**
-     * Desactiva un empleado en el sistema
+     * Desactiva un cliente en el sistema
      *
      * @param identificador
-     * @return status code: 406 si los datos del empleado no son validos,
+     * @return status code: 406 si los datos del cliente no son validos,
      * 500 si ocurre un error al realizar el proceso.
      * ok si se realiza el proceso de forma exitosa
      */
     @POST
     @Path("desactivar/{identificador}")
-    public Response desactivarEmpleado(@PathParam("identificador") String identificador) {
+    @RolesAllowed("CLIENTE")
+    public Response desactivarCliente(@PathParam("identificador") String identificador) {
         UsuariosService usuariosService = new UsuariosService();
         try {
-            usuariosService.editarEstadoUsuario(identificador, EstadoEnum.INACTIVO, Empleado.class);
+            usuariosService.editarEstadoUsuario(identificador, EstadoEnum.INACTIVO, Cliente.class);
             return Response.ok().build();
         } catch (InvalidDataException ex) {
             ex.printStackTrace();
@@ -112,22 +114,46 @@ public class EmpleadosResource {
     }
     
     /**
-     * Edita la información de un empleado en el sistema
+     * Desactiva un cliente en el sistema
      *
      * @param identificador
-     * @param empleado
-     * @return status code: 406 si los datos del empleado no son validos,
+     * @return status code: 406 si los datos del cliente no son validos,
+     * 500 si ocurre un error al realizar el proceso.
+     * ok si se realiza el proceso de forma exitosa
+     */
+    @POST
+    @Path("blacklist/{identificador}")
+    public Response ponerClienteEnListaNegra(@PathParam("identificador") String identificador) {
+        UsuariosService usuariosService = new UsuariosService();
+        try {
+            usuariosService.editarEstadoUsuario(identificador, EstadoEnum.LISTA_NEGRA, Cliente.class);
+            return Response.ok().build();
+        } catch (InvalidDataException ex) {
+            ex.printStackTrace();
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(ex.getMessage()).build();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * Edita la información de un cliente en el sistema
+     *
+     * @param identificador
+     * @param cliente
+     * @return status code: 406 si los datos del cliente no son validos,
      * 500 si ocurre un error al realizar el proceso.
      * ok si se realiza el proceso de forma exitosa
      */
     @POST
     @Path("actualizar/{identificador}")
-    @RolesAllowed({"EMPLEADO","MARKETING","SERVICIOS"})
+    @RolesAllowed("CLIENTE")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response actualizarEmpleado(@PathParam("identificador") String identificador, Empleado empleado) {
-        EmpleadosService empleadosService = new EmpleadosService();
+    public Response actualizarCliente(@PathParam("identificador") String identificador, Cliente cliente) {
+        ClientesService clientesService = new ClientesService();
         try {
-            empleadosService.actualizarEmpleado(empleado, identificador);
+            clientesService.actualizarCliente(cliente, identificador);
             return Response.ok().build();
         } catch (InvalidDataException | DuplicatedDataException ex) {
             ex.printStackTrace();
@@ -139,7 +165,7 @@ public class EmpleadosResource {
     }
     
     /**
-     * Edita la contraseña de un empleado en el sistema
+     * Edita la contraseña de un cliente en el sistema
      *
      * @param credenciales
      * @return status code: 406 si los datos ingresados no son validos,
@@ -148,12 +174,12 @@ public class EmpleadosResource {
      */
     @POST
     @Path("password")
-    @RolesAllowed({"EMPLEADO","MARKETING","SERVICIOS"})
+    @RolesAllowed("CLIENTE")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response actualizarContraseñaEmpleado(CredencialesDTO credenciales) {
+    public Response actualizarContraseñaCliente(CredencialesDTO credenciales) {
         UsuariosService usuariosService = new UsuariosService();
         try {
-            usuariosService.actualizarContraseña(credenciales, Empleado.class);
+            usuariosService.actualizarContraseña(credenciales, Cliente.class);
             return Response.ok().build();
         } catch (InvalidDataException ex) {
             ex.printStackTrace();
@@ -165,22 +191,22 @@ public class EmpleadosResource {
     }
     
     /**
-     * Obtiene la informacion de un empleado en base a su identificador
+     * Obtiene la informacion de un cliente en base a su identificador
      *
      * @param identificador
-     * @return status code: 404 si no se encuentra ningun empleado,
+     * @return status code: 404 si no se encuentra ningun cliente,
      * 500 si ocurre un error al realizar el proceso.
-     * Empleado si se encuentra el empleado
+     * Cliente si se encuentra el cliente
      */
     @GET
     @Path("{identificador}")
     @PermitAll
     @Produces(MediaType.APPLICATION_JSON)
-    public Response obtenerEmpleado(@PathParam("identificador") String identificador) {
-        EmpleadosService empleadosService = new EmpleadosService();
+    public Response obtenerCliente(@PathParam("identificador") String identificador) {
+        ClientesService clientesService = new ClientesService();
         try {
-            Empleado empleado = empleadosService.obtenerEmpleado(identificador);
-            return Response.ok(empleado).build();
+            Cliente cliente = clientesService.obtenerCliente(identificador, "dpi");
+            return Response.ok(cliente).build();
         } catch (SQLException ex) {
             ex.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -191,18 +217,18 @@ public class EmpleadosResource {
     }
     
     /**
-     * Obtiene la informacion de todos los empleados en el sistema
+     * Obtiene la informacion de todos los clientes en el sistema
      *
      * @return status code: 500 si ocurre un error al realizar el proceso.
-     * Empleados encontrados
+     * Clientes encontrados
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response obtenerEmpleados() {
-        EmpleadosService empleadosService = new EmpleadosService();
+    public Response obtenerClientes() {
+        ClientesService clientesService = new ClientesService();
         try {
-            List<Empleado> empleados = empleadosService.obtenerEmpleados();
-            return Response.ok(empleados).build();
+            List<Cliente> clientes = clientesService.obtenerClientes();
+            return Response.ok(clientes).build();
         } catch (SQLException ex) {
             ex.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();

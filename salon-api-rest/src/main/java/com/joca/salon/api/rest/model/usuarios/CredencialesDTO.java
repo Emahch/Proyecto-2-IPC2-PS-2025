@@ -19,7 +19,7 @@ public class CredencialesDTO {
 
     public CredencialesDTO() {
     }
-    
+
     public void encriptarContraseña() {
         this.contraseña = String.format("%x", new BigInteger(1, contraseña.getBytes()));
     }
@@ -35,7 +35,7 @@ public class CredencialesDTO {
     public void setContraseña(String contraseña) {
         this.contraseña = contraseña;
     }
-    
+
     public String getIdentificador() {
         return identificador;
     }

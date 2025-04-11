@@ -8,6 +8,7 @@ import com.joca.salon.api.rest.model.Almacenable;
  */
 public abstract class Usuario implements Almacenable {
 
+    public static final int LENGTH_ID = 13;
     public static final int MAX_LENGTH_NOMBRE = 50;
     public static final int MIN_LENGTH_NOMBRE = 3;
 

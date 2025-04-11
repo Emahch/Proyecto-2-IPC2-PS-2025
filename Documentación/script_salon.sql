@@ -6,13 +6,16 @@ CREATE TABLE preferencias (
 );
 
 CREATE TABLE clientes (
-  correo VARCHAR(50) PRIMARY KEY,
-  dpi VARCHAR(14) not null,
-  contraseña VARCHAR(100) not null,
+  dpi VARCHAR(14) PRIMARY KEY,
+  correo VARCHAR(50) not null,
+  contraseña VARCHAR(100) null,
   estado VARCHAR(20) not null,
+  nombre VARCHAR(50) not null,
   direccion VARCHAR(50) null,
-  telefono VARCHAR(20) not null,
-  nombre VARCHAR(50) not null
+  telefono VARCHAR(20) null,
+  fotografia BLOB null,
+  hobbies VARCHAR(100) null,
+  descripcion VARCHAR(100) null
 );
 
 CREATE TABLE servicios (
@@ -60,30 +63,17 @@ CREATE TABLE empleados (
     REFERENCES roles (nombre)
 );
 
-CREATE TABLE perfiles (
-  correo VARCHAR(50) not null,
-  dpi VARCHAR(14) not null,
-  fotografia BLOB null,
-  hobbies VARCHAR(100) null,
-  descripcion VARCHAR(100) null,
-  PRIMARY KEY (correo, dpi),
-  INDEX fk_perfiles_clientes_idx (dpi ASC) VISIBLE,
-  CONSTRAINT fk_prefiles_clientes
-    FOREIGN KEY (correo)
-    REFERENCES clientes (correo)
-);
-
 CREATE TABLE asignacion_preferencias (
   nombre_preferencia VARCHAR(20) NOT NULL,
   dpi VARCHAR(14) NOT NULL,
   PRIMARY KEY (nombre_preferencia, dpi),
-  INDEX fk_perfiles_asignacion_idx (dpi ASC) VISIBLE,
+  INDEX fk_clientes_asignacion_idx (dpi ASC) VISIBLE,
   CONSTRAINT fk_preferencia_asignacion
     FOREIGN KEY (nombre_preferencia)
     REFERENCES preferencias (nombre),
-  CONSTRAINT fk_perfiles_asignacion
+  CONSTRAINT fk_clientes_asignacion
     FOREIGN KEY (dpi)
-    REFERENCES perfiles (dpi)
+    REFERENCES clientes (dpi)
 );
 
 CREATE TABLE reservas (
@@ -99,7 +89,7 @@ CREATE TABLE reservas (
   INDEX fk_servicio_reserva_idx (nombre_servicio ASC) VISIBLE,
   CONSTRAINT fk_cliente_reserva
     FOREIGN KEY (dpi_cliente)
-    REFERENCES perfiles (dpi),
+    REFERENCES clientes (dpi),
   CONSTRAINT fk_empleado_reserva
     FOREIGN KEY (dpi_empleado)
     REFERENCES empleados (dpi),
